@@ -55,7 +55,7 @@ backend rails_app_servers
   option forwardfor
   option httpchk <%= node[:haproxy][:health_check_method] %> <%= node[:haproxy][:health_check_url] %>
   <% node[:haproxy][:rails_backends].each do |backend| -%>
-  server <%= backend['name'] %> <%= backend['ip'] %>:80 weight <%= backend['backends'] || 10 %> maxconn <%= backend['backends'] * node[:haproxy][:maxcon_factor_rails_app] %> check inter <%= node[:haproxy][:check_interval] %>
+  server <%= backend['name'] %> <%= backend['ip'] %>:80 weight <%= backend['backends'] || 10 %> maxconn <%= node[:rails][:max_pool_size] %> check inter <%= node[:haproxy][:check_interval] %>
   <% end -%>
 <% end -%>
 

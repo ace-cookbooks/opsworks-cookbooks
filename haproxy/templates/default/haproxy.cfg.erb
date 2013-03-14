@@ -38,6 +38,12 @@ defaults
   stats auth <%= node[:haproxy][:stats_user] %>:<%= node[:haproxy][:stats_password] %>
   stats uri <%= node[:haproxy][:stats_url] %>
   <% end -%>
+
+  <% if node[:haproxy][:errorloc] -%>
+    <% node[:haproxy][:errorloc].each do |code, location| -%>
+  errorloc303 <%= code %> <%= location %>
+    <% end -%>
+  <% end -%>
         
 # Set up application listeners here.
 <% if node[:haproxy][:rails_backends].blank? && node[:haproxy][:php_backends].blank? && node[:haproxy][:nodejs_backends].blank? && node[:haproxy][:static_backends].blank? && node[:haproxy][:java_backends].blank? -%>

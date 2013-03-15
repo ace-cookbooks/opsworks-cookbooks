@@ -39,6 +39,10 @@ defaults
   stats uri <%= node[:haproxy][:stats_url] %>
   <% end -%>
 
+  <% if node[:haproxy][:monitor_uri] -%>
+  monitor-uri <%= node[:haproxy][:monitor_uri] %>
+  <% end -%>
+
   <% if node[:haproxy][:errorfile] -%>
     <% node[:haproxy][:errorfile].each_key do |code| -%>
   errorfile <%= code %> <%= "/etc/haproxy/#{code}.http" %>

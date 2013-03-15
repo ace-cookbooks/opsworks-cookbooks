@@ -39,21 +39,13 @@ defaults
   stats uri <%= node[:haproxy][:stats_url] %>
   <% end -%>
 
-  <% if node[:haproxy][:errorloc] -%>
-    <% node[:haproxy][:errorloc].each do |code, location| -%>
-  errorloc303 <%= code %> <%= location %>
+  <% if node[:haproxy][:errorfile] -%>
+    <% node[:haproxy][:errorfile].each_key do |code| -%>
+  errorfile <%= code %> <%= "/etc/haproxy/#{code}.http" %>
     <% end -%>
   <% end -%>
         
 # Set up application listeners here.
-<% if node[:haproxy][:rails_backends].blank? && node[:haproxy][:php_backends].blank? && node[:haproxy][:nodejs_backends].blank? && node[:haproxy][:static_backends].blank? && node[:haproxy][:java_backends].blank? -%>
-listen application 0.0.0.0:80
-  # configure a fake backend as long as there are no real ones
-  # this way HAProxy will not fail on a config check
-  balance <%= node[:haproxy][:balance] %>
-  server localhost 127.0.0.1:8080 weight 1 maxconn 5 check
-<% else -%>
-
 <% if !node[:haproxy][:rails_backends].empty? -%>
 backend rails_app_servers
   balance <%= node[:haproxy][:balance] %>
@@ -215,5 +207,3 @@ frontend http-in
   <% elsif !node[:haproxy][:java_backends].empty? -%>
   default_backend java_servers
   <% end -%>
-
-<% end -%>  

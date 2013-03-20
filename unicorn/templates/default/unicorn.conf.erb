@@ -19,6 +19,15 @@ GC.copy_on_write_friendly = true if GC.respond_to?(:copy_on_write_friendly=)
 # ensure Unicorn doesn't use a stale Gemfile when restarting
 # more info: https://willj.net/2011/08/02/fixing-the-gemfile-not-found-bundlergemfilenotfound-error/
 before_exec do |server|
+  # If we're loading from .env files, clear out the env vars so we pick up changes.
+  if defined?(Dotenv)
+    rails_env = ENV['RAILS_ENV'] || ENV['RACK_ENV']
+    [".env.#{rails_env}", '.env'].each do |file|
+      env = Dotenv::Environment.new(file)
+      env.each { |var, value|  ENV[var] = nil }
+    end
+  end
+
   ENV['BUNDLE_GEMFILE'] = "<%= @deploy[:deploy_to]%>/current/Gemfile"
 end
 

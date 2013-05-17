@@ -23,6 +23,7 @@ before_exec do |server|
   if defined?(Dotenv)
     rails_env = ENV['RAILS_ENV'] || ENV['RACK_ENV']
     [".env.#{rails_env}", '.env'].each do |file|
+      next unless File.exists?(file)
       env = Dotenv::Environment.new(file)
       env.each { |var, value|  ENV[var] = nil }
     end

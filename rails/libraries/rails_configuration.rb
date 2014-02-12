@@ -1,7 +1,5 @@
 module OpsWorks
   module RailsConfiguration
-    include Chef::DSL::Recipe
-
     def self.determine_database_adapter(app_name, app_config, app_root_path, options = {})
       options = {
         :consult_gemfile => true,

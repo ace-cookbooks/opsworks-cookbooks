@@ -12,7 +12,7 @@ module OpsWorks
         adapter = ''
 
         if options[:consult_gemfile] and File.exists?("#{app_root_path}/Gemfile")
-          show_mysql2 = Mixlib::ShellOut.new("#{app_config[:bundle_binary]} show mysql2", env: app_config[:environment], user: app_config[:user], group: app_config[:group])
+          show_mysql2 = Mixlib::ShellOut.new("#{app_config[:bundle_binary]} show mysql2", :env => app_config[:environment], :user => app_config[:user], :group => app_config[:group])
           show_mysql2.run_command
           adapter = if !show_mysql2.error?
             Chef::Log.info("Looks like #{app_name} uses mysql2 in its Gemfile")

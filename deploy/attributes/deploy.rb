@@ -66,7 +66,7 @@ node[:deploy].each do |application, deploy|
   end
 
   # Rely on binstubs for rake
-  default[:deploy][application][:rake] = 'rake'
+  default[:deploy][application][:rake] = './bin/rake'
 
   default[:deploy][application][:migrate] = false
   default[:deploy][application][:migrate_command] = "#{node[:deploy][application][:rake]} db:migrate"

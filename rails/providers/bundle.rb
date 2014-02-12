@@ -5,7 +5,7 @@ action :install do
   app_config = new_resource.app_config
   app_root_path = new_resource.app_root_path
 
-  raise 'No Gemfile found!' unless File.exists?(File.join(app_root_path, 'Gemfile'))
+  raise 'No Gemfile found!' unless ::File.exists?(::File.join(app_root_path, 'Gemfile'))
 
   execute 'bundle install' do
     user app_config[:user]
@@ -18,7 +18,7 @@ action :install do
   binstubs = %w(rake)
   binstubs << 'unicorn' if node[:opsworks][:rails_stack][:name] == 'nginx_unicorn'
 
-  app_path = Pathname.new(app_root_path)
+  app_path = ::Pathname.new(app_root_path)
   if (app_path + 'bin').directory?
     binstubs.each do |binstub|
       raise "Missing #{binstub} binstub" unless (app_path.join('bin', binstub)).exist?

@@ -1,5 +1,7 @@
 module OpsWorks
   module RailsConfiguration
+    include Chef::DSL::Recipe
+
     def self.determine_database_adapter(app_name, app_config, app_root_path, options = {})
       options = {
         :consult_gemfile => true,
@@ -10,8 +12,9 @@ module OpsWorks
         adapter = ''
 
         if options[:consult_gemfile] and File.exists?("#{app_root_path}/Gemfile")
-          bundle_list = `cd #{app_root_path}; /usr/local/bin/bundle list`
-          adapter = if bundle_list.include?('mysql2')
+          show_mysql2 = Mixlib::ShellOut.new("#{app_config[:bundle_binary]} show mysql2", env: app_config[:environment], user: app_config[:user], group: app_config[:group])
+          show_mysql2.run_command
+          adapter = if !show_mysql2.error?
             Chef::Log.info("Looks like #{app_name} uses mysql2 in its Gemfile")
             'mysql2'
           else
@@ -35,10 +38,39 @@ module OpsWorks
     end
 
     def self.bundle(app_name, app_config, app_root_path)
-      if File.exists?("#{app_root_path}/Gemfile")
-        Chef::Log.info("Gemfile detected. Running bundle install.")
-        Chef::Log.info("sudo su - #{app_config[:user]} -c 'cd #{app_root_path} && /usr/local/bin/bundle install --path #{app_config[:home]}/.bundler/#{app_name} --without=#{app_config[:ignore_bundler_groups].join(' ')}'")
-        Chef::Log.info(OpsWorks::ShellOut.shellout("sudo su - #{app_config[:user]} -c 'cd #{app_root_path} && /usr/local/bin/bundle install --path #{app_config[:home]}/.bundler/#{app_name} --without=#{app_config[:ignore_bundler_groups].join(' ')}' 2>&1"))
+      raise 'No Gemfile found!' unless File.exists?(File.join(app_root_path, 'Gemfile'))
+
+      execute 'bundle install' do
+        user app_config[:user]
+        group app_config[:group]
+        environment(app_config[:environment])
+        cwd app_root_path
+        command "#{app_config[:bundle_binary]} install --deployment --path #{app_config[:home]}/.bundler/#{app_name} --without=#{app_config[:ignore_bundler_groups].join(' ')} 2>&1"
+      end
+
+      binstubs = %w(rake)
+      binstubs << 'unicorn' if node[:opsworks][:rails_stack][:name] == 'nginx_unicorn'
+
+      app_path = Pathname.new(app_root_path)
+      if (app_path + 'bin').directory?
+        binstubs.each do |binstub|
+          raise "Missing #{binstub} binstub" unless (app_path.join('bin', binstub)).exist?
+        end
+      else
+        directory((app_path + 'bin').to_s) do
+          owner app_config[:user]
+          group app_config[:group]
+          mode 00755
+          action :create
+        end
+
+        execute 'bundle binstubs' do
+          user app_config[:user]
+          group app_config[:group]
+          environment(app_config[:environment])
+          cwd app_root_path
+          command "#{app_config[:bundle_binary]} binstubs #{binstubs.join(' ')}"
+        end
       end
     end
   end

@@ -45,6 +45,7 @@ when 'centos','redhat','fedora','amazon'
 end
 
 default[:opsworks][:rails][:ignore_bundler_groups] = ['test', 'development']
+default[:opsworks][:rails][:bundle_binary] = '/usr/local/bin/bundle'
 
 default[:deploy] = {}
 node[:deploy].each do |application, deploy|
@@ -57,27 +58,19 @@ node[:deploy].each do |application, deploy|
   default[:deploy][application][:current_path] = "#{node[:deploy][application][:deploy_to]}/current"
   default[:deploy][application][:document_root] = ''
   default[:deploy][application][:ignore_bundler_groups] = node[:opsworks][:rails][:ignore_bundler_groups]
+  default[:deploy][application][:bundle_binary] = node[:opsworks][:rails][:bundler_binary]
   if deploy[:document_root]
     default[:deploy][application][:absolute_document_root] = "#{default[:deploy][application][:current_path]}/#{deploy[:document_root]}/"
   else
     default[:deploy][application][:absolute_document_root] = "#{default[:deploy][application][:current_path]}/"
   end
 
-  if File.exists?('/usr/local/bin/rake')
-    # local Ruby rake is installed
-    default[:deploy][application][:rake] = '/usr/local/bin/rake'
-  else
-    # use default Rake/ruby
-    default[:deploy][application][:rake] = 'rake'
-  end
+  # Rely on binstubs for rake
+  default[:deploy][application][:rake] = 'rake'
 
   default[:deploy][application][:migrate] = false
+  default[:deploy][application][:migrate_command] = "#{node[:deploy][application][:rake]} db:migrate"
 
-  if node[:deploy][application][:auto_bundle_on_deploy]
-    default[:deploy][application][:migrate_command] = "if [ -f Gemfile ]; then echo 'OpsWorks: Gemfile found - running migration with bundle exec' && /usr/local/bin/bundle exec #{node[:deploy][application][:rake]} db:migrate; else echo 'OpsWorks: no Gemfile - running plain migrations' && #{node[:deploy][application][:rake]} db:migrate; fi"
-  else
-    default[:deploy][application][:migrate_command] = "#{node[:deploy][application][:rake]} db:migrate"
-  end
   default[:deploy][application][:rails_env] = 'production'
   default[:deploy][application][:action] = 'deploy'
   default[:deploy][application][:user] = node[:opsworks][:deploy_user][:user]

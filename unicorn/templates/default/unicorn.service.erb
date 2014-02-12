@@ -38,8 +38,11 @@ end
 
 def start_unicorn
   if File.exists?("#{ROOT_PATH}/current/Gemfile")
-    puts "OpsWorks: Gemfile detected - running Unicorn with bundle exec"
-    run_and_ignore_exitcode_and_print_command "cd #{ROOT_PATH}/current && /usr/local/bin/bundle exec unicorn_rails --env <%= @deploy[:rails_env] %> --daemonize -c #{ROOT_PATH}/shared/config/unicorn.conf"
+    puts "OpsWorks: Gemfile detected - running Unicorn from application"
+    command = []
+    command << %{env -i - <%= @deploy[:environment].to_hash.reduce([]){|ary,env| ary << "#{env.first}=#{env.last}"}.join(' ') %>}
+    command << %{#{ROOT_PATH}/current/bin/unicorn_rails --env <%= @deploy[:rails_env] %> --daemonize -c #{ROOT_PATH}/shared/config/unicorn.conf}
+    run_and_ignore_exitcode_and_print_command command.join(' ')
   else
     puts "OpsWorks: no Gemfile detected - running plain Unicorn"
     run_and_ignore_exitcode_and_print_command "cd #{ROOT_PATH}/current && unicorn_rails --env <%= @deploy[:rails_env] %> --daemonize -c #{ROOT_PATH}/shared/config/unicorn.conf"

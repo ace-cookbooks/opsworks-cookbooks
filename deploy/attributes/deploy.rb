@@ -46,6 +46,7 @@ end
 
 default[:opsworks][:rails][:ignore_bundler_groups] = ['test', 'development']
 default[:opsworks][:rails][:bundle_binary] = '/usr/local/bin/bundle'
+default[:opsworks][:rails][:environment] = {}
 
 default[:deploy] = {}
 node[:deploy].each do |application, deploy|
@@ -91,10 +92,10 @@ node[:deploy].each do |application, deploy|
   default[:deploy][application][:create_dirs_before_symlink] = ['tmp', 'public', 'config']
   default[:deploy][application][:symlink_before_migrate] = {}
 
-  default[:deploy][application][:environment] = {"RAILS_ENV" => deploy[:rails_env],
+  default[:deploy][application][:environment] = node[:opsworks][:rails][:environment].merge("RAILS_ENV" => deploy[:rails_env],
                                                  "RUBYOPT" => "",
                                                  "RACK_ENV" => deploy[:rails_env],
-                                                 "HOME" => node[:deploy][application][:home]}
+                                                 "HOME" => node[:deploy][application][:home])
   default[:deploy][application][:ssl_support] = false
   default[:deploy][application][:auto_npm_install_on_deploy] = true
 

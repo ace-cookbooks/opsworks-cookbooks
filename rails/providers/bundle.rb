@@ -1,3 +1,6 @@
+require 'chef/mixin/shell_out'
+include Chef::Mixin::ShellOut
+
 use_inline_resources
 
 action :install do
@@ -7,13 +10,15 @@ action :install do
 
   raise 'No Gemfile found!' unless ::File.exists?(::File.join(app_root_path, 'Gemfile'))
 
-  execute 'bundle install' do
-    user app_config[:user]
-    group app_config[:group]
-    environment(app_config[:environment])
-    cwd app_root_path
-    command "#{app_config[:bundle_binary]} install --deployment --path #{app_config[:home]}/.bundler/#{app_name} --without=#{app_config[:ignore_bundler_groups].join(' ')} 2>&1"
-  end
+  command_opts = {:timeout => 3600, :log_level => :info, :log_tag => 'shell_out!(bundle install)'}
+  command_opts[:user] = app_config[:user]
+  command_opts[:group] = app_config[:group]
+  command_opts[:environment] = app_config[:environment]
+  command_opts[:cwd] = app_root_path
+  command_opts[:logger] = Chef::Log
+  command_opts[:live_stream] = Chef::Log #if Chef::Log.info?
+  result = shell_out!("#{app_config[:bundle_binary]} install --deployment --path #{app_config[:home]}/.bundler/#{app_name} --without=#{app_config[:ignore_bundler_groups].join(' ')} 2>&1", command_opts)
+  Chef::Log.info("#{command_opts[:log_tag]} ran successfully")
 
   binstubs = %w(rake)
   binstubs << 'unicorn' if node[:opsworks][:rails_stack][:name] == 'nginx_unicorn'

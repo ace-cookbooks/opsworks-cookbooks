@@ -9,7 +9,7 @@ template "/etc/rsyslog.d/haproxy.conf" do
   owner "root"
   group "root"
   mode 0644
-  notifies :restart, resources(:service => 'rsyslog')
+  notifies :restart, 'service[rsyslog]'
   variables({
     :log_to_files => node[:haproxy][:log_to_files]
   })

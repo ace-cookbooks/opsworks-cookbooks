@@ -45,7 +45,7 @@ when 'centos','redhat','fedora','amazon'
 end
 
 default[:opsworks][:rails][:ignore_bundler_groups] = ['test', 'development']
-default[:opsworks][:rails][:bundle_binary] = '/usr/local/bin/bundle'
+default[:opsworks][:rails][:bundler_binary] = '/usr/local/bin/bundle'
 default[:opsworks][:rails][:environment] = {}
 
 default[:deploy] = {}
@@ -58,8 +58,8 @@ node[:deploy].each do |application, deploy|
   default[:deploy][application][:keep_releases] = node[:deploy][application][:keep_releases] ? node[:deploy][application][:keep_releases] : node[:opsworks][:deploy_keep_releases]
   default[:deploy][application][:current_path] = "#{node[:deploy][application][:deploy_to]}/current"
   default[:deploy][application][:document_root] = ''
-  default[:deploy][application][:ignore_bundler_groups] = node[:opsworks][:rails][:ignore_bundler_groups]
-  default[:deploy][application][:bundle_binary] = node[:opsworks][:rails][:bundler_binary]
+  default[:deploy][application][:ignore_bundler_groups] = node[:opsworks][:rails][r:ignore_bundler_groups]
+  default[:deploy][application][:bundler_binary] = node[:opsworks][:rails][:bundler_binary]
   if deploy[:document_root]
     default[:deploy][application][:absolute_document_root] = "#{default[:deploy][application][:current_path]}/#{deploy[:document_root]}/"
   else

@@ -17,7 +17,7 @@ action :install do
   command_opts[:cwd] = app_root_path
   command_opts[:logger] = Chef::Log
   command_opts[:live_stream] = Chef::Log #if Chef::Log.info?
-  result = shell_out!("#{app_config[:bundle_binary]} install --deployment --path #{app_config[:home]}/.bundler/#{app_name} --without=#{app_config[:ignore_bundler_groups].join(' ')} 2>&1", command_opts)
+  shell_out!("#{app_config[:bundler_binary]} install --deployment --path #{app_config[:home]}/.bundler/#{app_name} --without=#{app_config[:ignore_bundler_groups].join(' ')} 2>&1", command_opts)
   Chef::Log.info("#{command_opts[:log_tag]} ran successfully")
 
   binstubs = %w(rake)
@@ -41,7 +41,7 @@ action :install do
       group app_config[:group]
       environment(app_config[:environment])
       cwd app_root_path
-      command "#{app_config[:bundle_binary]} binstubs #{binstubs.join(' ')}"
+      command "#{app_config[:bundler_binary]} binstubs #{binstubs.join(' ')}"
     end
   end
 end

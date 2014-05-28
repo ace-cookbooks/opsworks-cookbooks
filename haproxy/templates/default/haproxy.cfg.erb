@@ -101,7 +101,7 @@ backend java_servers
 frontend http-in
   bind :80
   <% if node[:haproxy][:trusted_lb] -%>
-  bind <%= node[:haproxy][:trusted_lb][:bind_port] %>
+  bind :<%= node[:haproxy][:trusted_lb][:bind_port] %>
   <% end -%>
 
   <% if node[:haproxy][:ssl] -%>

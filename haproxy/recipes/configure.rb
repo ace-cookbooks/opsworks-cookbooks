@@ -3,12 +3,25 @@ service "haproxy" do
   action :nothing # only define so that it can be restarted if the config changed
 end
 
+begin
+  load_balancers = search(:node, 'role:haproxy')
+  num_load_balancers = load_balancers.size > 0 ? load_balancers.size : 1
+  Chef::Log.info("load_balancers: #{load_balancers}")
+  Chef::Log.info("num_load_balancers: #{num_load_balancers}")
+  Chef::Log.info("rails_pool_size: #{node[:rails][:max_pool_size] / num_load_balancers}")
+rescue => e
+  Chef::Log.warn("exception: #{e}")
+end
+
 template "/etc/haproxy/haproxy.cfg" do
   cookbook "haproxy"
   source "haproxy.cfg.erb"
   owner "root"
   group "root"
   mode 0644
+  variables({
+    rails_pool_size: node[:rails][:max_pool_size]
+  })
   notifies :reload, "service[haproxy]"
 end
 

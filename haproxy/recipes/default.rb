@@ -32,12 +32,12 @@ end
 include_recipe 'haproxy::service'
 
 begin
-  load_balancers = search(:node, 'role:haproxy')
+  load_balancers = search(:node, 'role:lb')
   num_load_balancers = load_balancers.size > 0 ? load_balancers.size : 1
   Chef::Log.info("load_balancers: #{load_balancers}")
   Chef::Log.info("num_load_balancers: #{num_load_balancers}")
   Chef::Log.info("rails_pool_size: #{node[:rails][:max_pool_size].to_i / num_load_balancers}")
-  load_balancers = node[:opsworks][:layers][:haproxy][:instances]
+  load_balancers = node[:opsworks][:layers][:lb][:instances]
   Chef::Log.info("load_balancers_2: #{load_balancers}")
   Chef::Log.info("load_balancers_2 size: #{load_balancers.size}")
 rescue => e

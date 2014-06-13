@@ -9,6 +9,9 @@ begin
   Chef::Log.info("load_balancers: #{load_balancers}")
   Chef::Log.info("num_load_balancers: #{num_load_balancers}")
   Chef::Log.info("rails_pool_size: #{node[:rails][:max_pool_size].to_i / num_load_balancers}")
+  load_balancers = node[:opsworks][:layers][:haproxy][:instances]
+  Chef::Log.info("load_balancers_2: #{load_balancers}")
+  Chef::Log.info("load_balancers_2 size: #{load_balancers.size}")
 rescue => e
   Chef::Log.warn("exception: #{e}")
 end

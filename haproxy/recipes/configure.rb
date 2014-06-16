@@ -6,15 +6,15 @@ end
 begin
   load_balancers = search(:node, 'role:lb')
   num_load_balancers = load_balancers.size > 0 ? load_balancers.size : 1
-  Chef::Log.info("load_balancers: #{load_balancers}")
+  rails_pool_size = node[:rails][:max_pool_size].to_i / num_load_balancers
   Chef::Log.info("num_load_balancers: #{num_load_balancers}")
-  Chef::Log.info("rails_pool_size: #{node[:rails][:max_pool_size].to_i / num_load_balancers}")
-  load_balancers = node[:opsworks][:layers][:lb][:instances]
-  Chef::Log.info("load_balancers_2: #{load_balancers}")
-  Chef::Log.info("load_balancers_2 size: #{load_balancers.size}")
+  Chef::Log.info("rails_pool_size: #{node[:haproxy][:rails_pool_size]}")
 rescue => e
   Chef::Log.warn("exception: #{e}")
 end
+
+# hardcode bypass
+rails_pool_size = node[:rails][:max_pool_size]
 
 template "/etc/haproxy/haproxy.cfg" do
   cookbook "haproxy"
@@ -23,7 +23,7 @@ template "/etc/haproxy/haproxy.cfg" do
   group "root"
   mode 0644
   variables({
-    rails_pool_size: node[:rails][:max_pool_size]
+    rails_pool_size: rails_pool_size
   })
   notifies :reload, "service[haproxy]"
 end

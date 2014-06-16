@@ -8,7 +8,7 @@ begin
   num_load_balancers = load_balancers.size > 0 ? load_balancers.size : 1
   rails_pool_size = node[:rails][:max_pool_size].to_i / num_load_balancers
   Chef::Log.info("num_load_balancers: #{num_load_balancers}")
-  Chef::Log.info("rails_pool_size: #{node[:haproxy][:rails_pool_size]}")
+  Chef::Log.info("rails_pool_size: #{rails_pool_size}")
 rescue => e
   Chef::Log.warn("exception: #{e}")
 end

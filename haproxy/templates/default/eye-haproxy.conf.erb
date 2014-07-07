@@ -3,6 +3,9 @@
 require File.join(File.dirname(__FILE__), "config.rb")
 
 Eye.application 'haproxy' do
+  <% if node['eye']['notify'] -%>
+  notify <%= node['eye']['notify'] %>
+  <% end -%>
   working_dir '/etc/haproxy'
 
   process('haproxy') do

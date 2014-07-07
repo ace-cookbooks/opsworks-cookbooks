@@ -29,6 +29,7 @@ if platform?('debian','ubuntu')
   end
 end
 
+include_recipe 'ace-eye'
 include_recipe 'eye'
 include_recipe 'haproxy::configure'
 

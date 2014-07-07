@@ -52,14 +52,12 @@ defaults
 
 
 # Set up application listeners here.
-<% if !node[:haproxy][:rails_backends].empty? -%>
 backend rails_app_servers
   balance <%= node[:haproxy][:balance] %>
   option httpchk <%= node[:haproxy][:health_check_method] %> <%= node[:haproxy][:health_check_url] %>
   <% node[:haproxy][:rails_backends].each do |backend| -%>
   server <%= backend['name'] %> <%= backend['ip'] %>:80 weight <%= @rails_pool_size %> maxconn <%= @rails_pool_size %> check inter <%= node[:haproxy][:check_interval] %>
   <% end -%>
-<% end -%>
 
 <% if !node[:haproxy][:php_backends].empty? -%>
 backend php_app_servers

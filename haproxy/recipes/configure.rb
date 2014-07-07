@@ -1,8 +1,3 @@
-service "haproxy" do
-  supports :restart => true, :status => true, :reload => true
-  action :nothing # only define so that it can be restarted if the config changed
-end
-
 begin
   load_balancers = search(:node, 'role:lb')
   num_load_balancers = load_balancers.size > 0 ? load_balancers.size : 1
@@ -16,6 +11,8 @@ end
 # hardcode bypass
 rails_pool_size = node[:rails][:max_pool_size]
 
+include_recipe 'haproxy::service'
+
 template "/etc/haproxy/haproxy.cfg" do
   cookbook "haproxy"
   source "haproxy.cfg.erb"
@@ -25,11 +22,6 @@ template "/etc/haproxy/haproxy.cfg" do
   variables({
     rails_pool_size: rails_pool_size
   })
-  notifies :reload, "service[haproxy]"
+  notifies :restart, "eye_service[haproxy]", :delayed
+  not_if { node[:opsworks][:activity] == 'setup' }
 end
-
-execute "echo 'checking if HAProxy is not running - if so start it'" do
-  not_if "pgrep haproxy"
-  notifies :start, "service[haproxy]"
-end
-

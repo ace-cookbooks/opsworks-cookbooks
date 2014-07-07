@@ -6,7 +6,7 @@ template "/etc/haproxy/default.pem" do
   owner "root"
   group "root"
   mode 0600
-  notifies :reload, 'service[haproxy]'
+  notifies :restart, 'eye_service[haproxy]', :delayed
   variables({
     :private_key => node[:haproxy][:ssl][:private_key],
     :certificate => node[:haproxy][:ssl][:certificate],

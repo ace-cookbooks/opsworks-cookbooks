@@ -1,5 +1,8 @@
 include_recipe "haproxy::service"
 
-service "haproxy" do
-  action :stop
+ruby_block 'stop haproxy' do
+  block do
+    true
+  end
+  notifies :safe_stop, 'eye_service[haproxy]', :immediately
 end

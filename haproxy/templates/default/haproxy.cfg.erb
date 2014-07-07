@@ -50,6 +50,7 @@ defaults
     <% end -%>
   <% end -%>
 
+
 # Set up application listeners here.
 <% if !node[:haproxy][:rails_backends].empty? -%>
 backend rails_app_servers
@@ -90,34 +91,26 @@ backend static_servers
 <% if !node[:haproxy][:java_backends].empty? -%>
 backend java_servers
   balance <%= node[:haproxy][:balance] %>
-  option redispatch
-  option forwardfor
   option httpchk <%= node[:haproxy][:health_check_method] %> <%= node[:haproxy][:health_check_url] %>
   <% node[:haproxy][:java_backends].each do |backend| -%>
   server <%= backend['name'] %> <%= backend['ip'] %>:80 weight <%= backend['backends'] || 10 %> maxconn <%= backend['backends'] * node[:haproxy][:maxcon_factor_java_app] %> check inter <%= node[:haproxy][:check_interval] %>
   <% end -%>
 <% end -%>
 
+frontend haproxy_status
+  bind :34180 # 34180 means EALTH ;)
+  acl backend_dead nbsrv(rails_app_servers) lt 1
+  monitor fail if backend_dead
+  default_backend rails_app_servers
+
 frontend http-in
-  bind :80
-  <% if node[:haproxy][:trusted_lb] -%>
-  bind :<%= node[:haproxy][:trusted_lb][:bind_port] %>
-  <% end -%>
+  bind :80 accept-proxy
+  bind :8443 accept-proxy
 
-  <% if node[:haproxy][:ssl] -%>
-  bind :443 ssl crt /etc/haproxy/default.pem ciphers <%= node[:haproxy][:ssl][:ciphers] %>
-  <% end -%>
-
-  <% if node[:haproxy][:trusted_lb] -%>
-  acl trusted_net src <%= node[:haproxy][:trusted_lb][:trusted_net] %>
-  acl trusted_port dst_port <%= node[:haproxy][:trusted_lb][:bind_port] %>
-
-  http-request deny if trusted_port !trusted_net
-
-  http-request set-header X-Forwarded-Proto https if { ssl_fc }
-  http-request del-header X-Forwarded-Proto if !{ ssl_fc } !trusted_port
-  http-request del-header X-Forwarded-For if !trusted_port
-  <% end -%>
+  acl ssl_used dst_port 8443
+  http-request set-header X-Forwarded-Proto https if ssl_used
+  http-request del-header X-Forwarded-Proto if !ssl_used
+  http-request del-header X-Forwarded-For
 
   # all domains of Rails applications
   <% node[:haproxy][:rails_applications].each do |app_name, app_config| -%>

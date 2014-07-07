@@ -8,9 +8,6 @@ rescue => e
   Chef::Log.warn("exception: #{e}")
 end
 
-# hardcode bypass
-rails_pool_size = node[:rails][:max_pool_size]
-
 include_recipe 'haproxy::service'
 
 template "/etc/haproxy/haproxy.cfg" do

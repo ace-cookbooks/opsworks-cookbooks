@@ -109,6 +109,12 @@ frontend http-in
   http-request set-header X-Forwarded-Proto https if ssl_used
   http-request del-header X-Forwarded-Proto if !ssl_used
 
+  <% if node[:haproxy].attribute?(:frontend_rules) -%>
+    <% node[:haproxy][:frontend_rules].each do |rule| -%>
+      <%= rule %>
+    <% end -%>
+  <% end -%>
+
   # all domains of Rails applications
   <% node[:haproxy][:rails_applications].each do |app_name, app_config| -%>
     <% app_config['domains'].each do |domain| -%>
@@ -208,4 +214,10 @@ frontend http-in
   default_backend static_servers
   <% elsif !node[:haproxy][:java_backends].empty? -%>
   default_backend java_servers
+  <% end -%>
+
+  <% if node[:haproxy].attribute?(:extra_backends) -%>
+    <% node[:haproxy][:extra_backends].each do |rule| -%>
+      <%= rule %>
+    <% end -%>
   <% end -%>

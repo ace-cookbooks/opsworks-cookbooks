@@ -16,6 +16,9 @@ stdout_path "<%= @deploy[:deploy_to]%>/shared/log/unicorn.stdout.log"
 preload_app <%= node[:unicorn][:preload_app] %>
 GC.copy_on_write_friendly = true if GC.respond_to?(:copy_on_write_friendly=)
 
+# Enable unicorn worker killer
+ENV['unicorn_enable_worker_killer'] ||= 'true'
+
 # ensure Unicorn doesn't use a stale Gemfile when restarting
 # more info: https://willj.net/2011/08/02/fixing-the-gemfile-not-found-bundlergemfilenotfound-error/
 before_exec do |server|

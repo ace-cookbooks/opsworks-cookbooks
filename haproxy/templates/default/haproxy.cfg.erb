@@ -14,6 +14,12 @@ global
   stats socket <%= node[:haproxy][:stats_socket_path] %>
   <% end %>
 
+  <% if node[:haproxy].attribute?(:global_rules) -%>
+    <% node[:haproxy][:global_rules].each do |rule| -%>
+      <%= rule %>
+    <% end -%>
+  <% end -%>
+
 defaults
   log             global
   mode            http
